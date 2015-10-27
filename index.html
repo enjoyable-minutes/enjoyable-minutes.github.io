@@ -1,0 +1,90 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>IMDb Suggest with jQuery Autocomplete</title>
+    <link type="text/css" href="https://code.jquery.com/ui/1.11.4/themes/ui-lightness/jquery-ui.css" rel="stylesheet" />
+    <script type="text/javascript" src="https://code.jquery.com/jquery-1.11.3.js"></script>
+    <script type="text/javascript" src="https://code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+    <script type="text/javascript">
+        $(function(){
+            $("#q").focus(); //Focus on search field
+            $("#q").autocomplete({
+                minLength: 2,
+                delay:5,
+                source: function(request, response) {
+                    $.getJSON("https://www.omdbapi.com/", { s: request.term },
+                        function(r, s, data) {
+                            array = [];
+                            respArray = data.responseJSON.Search || [];
+                            for(var i=0;i<respArray.length;i++) {
+                                var o = {};
+//                                o.title = respArray[i].Title;
+                                o.label = respArray[i].Title;
+                                o.value = respArray[i].imdbID;
+                                o.img = respArray[i].Poster == 'N/A'?null:respArray[i].Poster;
+//                                array.push(respArray[i].Title);
+                                array.push(o);
+                            }
+                            response(array);
+                        });
+                },
+                focus: function( event, ui ) {
+//                    $(this).val( ui.item.value );
+                    return false;
+                },
+                select: function( event, ui ) {
+                    $(this).val( ui.item.label );
+                    console.log(ui.item);
+                    showMovie(ui.item.value);
+                    return false;
+                }
+            }).data("uiAutocomplete")._renderItem = function( ul, item ) {
+                item.img = null;
+                return $("<li></li>")
+                    .data( "item.autocomplete", item )
+                    .append( "<a>" + (item.img?"<img class='imdbImage' src='imdbImage.php?url=" + item.img + "' />":"") + "<span class='imdbTitle'>" + item.label + "</span>" + (item.cast?"<br /><span class='imdbCast'>" + item.cast + "</span>":"") + "<div class='clear'></div></a>" )
+                    .appendTo( ul );
+            };
+            function showMovie(imdbID) {
+                $.getJSON("https://www.omdbapi.com/", { i: imdbID },
+                    function(r, s, data) {
+                        movieDetails = data.responseJSON || {};
+                        enjoyableMinutes = (parseInt(movieDetails.Runtime) * parseInt(movieDetails.imdbRating) / 10);
+                        li = '<li>' + movieDetails.Title + ' - ' + movieDetails.Runtime + ' - ' +
+                            movieDetails.imdbRating + ' - ' + enjoyableMinutes + ' Enjoyable Minutes</li>'
+                        $('#movieList').prepend(li)
+                    });
+            }
+        });
+    </script>
+    <style type="text/css">
+        .ui-menu-item .imdbTitle{
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+        .ui-menu-item .imdbCast{
+            font-size: 0.7em;
+            font-style: italic;
+            line-height: 110%;
+            color: #666;
+        }
+        .ui-menu-item .imdbImage{
+            float: left;
+            margin-right: 5px;
+        }
+        .ui-menu-item .clear{
+            clear: both;
+        }
+    </style>
+</head>
+<body>
+<form id="form" name="form" method="get" action="http://www.imdb.com/find" style="text-align:center; margin-bottom:20px;">
+    Search:
+    <input name="q" id="q" type="text" size="50" />
+    <input name="s" value="all" type="hidden" />
+    <input name="submit" type="submit" value="Search" />
+</form>
+<ul id="movieList"></ul>
+</body>
+</html>
