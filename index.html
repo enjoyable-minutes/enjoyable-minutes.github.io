@@ -20,7 +20,7 @@
                             for(var i=0;i<respArray.length;i++) {
                                 var o = {};
 //                                o.title = respArray[i].Title;
-                                o.label = respArray[i].Title;
+                                o.label = respArray[i].Title + ' (' + respArray[i].Year + ')';
                                 o.value = respArray[i].imdbID;
                                 o.img = respArray[i].Poster == 'N/A'?null:respArray[i].Poster;
 //                                array.push(respArray[i].Title);
@@ -43,7 +43,7 @@
                 item.img = null;
                 return $("<li></li>")
                     .data( "item.autocomplete", item )
-                    .append( "<a>" + (item.img?"<img class='imdbImage' src='imdbImage.php?url=" + item.img + "' />":"") + "<span class='imdbTitle'>" + item.label + "</span>" + (item.cast?"<br /><span class='imdbCast'>" + item.cast + "</span>":"") + "<div class='clear'></div></a>" )
+                    .append( "<a>" + (item.img?"<img class='imdbImage' src='" + item.img + "' />":"") + "<span class='imdbTitle'>" + item.label + "</span><div class='clear'></div></a>" )
                     .appendTo( ul );
             };
             function showMovie(imdbID) {
@@ -51,7 +51,7 @@
                     function(r, s, data) {
                         movieDetails = data.responseJSON || {};
                         enjoyableMinutes = (parseInt(movieDetails.Runtime) * parseInt(movieDetails.imdbRating) / 10);
-                        li = '<li>' + movieDetails.Title + ' - ' + movieDetails.Runtime + ' - ' +
+                        li = '<li>' + movieDetails.Title + ' (' + movieDetails.Year + ') - ' + movieDetails.Runtime + ' - ' +
                             movieDetails.imdbRating + ' - ' + enjoyableMinutes + ' Enjoyable Minutes</li>'
                         $('#movieList').prepend(li)
                     });
@@ -86,5 +86,6 @@
     <input name="submit" type="submit" value="Search" />
 </form>
 <ul id="movieList"></ul>
+<div>Data driven by the nice people at <a href="http://omdbapi.com/">OMDB</a>.</div>
 </body>
 </html>
